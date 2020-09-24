@@ -1,13 +1,17 @@
 package base.kuehlpatrik.validate;
 
-public class Validator {
-    protected String _password;
-    protected String[] _passwords;
-    protected String _errorMessage;
-    protected int _errorIndexPosition = -1;
-    protected String _findNumbersRegex = "\".*\\\\d+.*\"";
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-    protected static final short PASSWORD_MAXIMUM_LENGTH = 20;
+public class Validator {
+    protected String _password = Validator.EMPTY_STRING;
+    protected String[] _passwords;
+    protected String _errorMessage = Validator.EMPTY_STRING;
+    protected int _errorIndexPosition = -1;
+
+    protected static final short PASSWORD_MINIMUM_LENGTH = 20;
+
+    protected static final String EMPTY_STRING = "";
 
     protected static final String ERR_INTRO = "The specified password ";
     protected static final String ERR_PASSWORD_TOO_SHORT = Validator.ERR_INTRO + "is too short.";
@@ -39,7 +43,7 @@ public class Validator {
     }
 
     public String getErrorMessage() {
-        return (this._errorMessage != null) ? this._errorMessage : "";
+        return !this._errorMessage.isEmpty() ? this._errorMessage : "";
     }
 
     public int getErrorIndexPos() {
@@ -47,7 +51,7 @@ public class Validator {
     }
 
     public boolean performCheck() {
-        if (this._password != null) {
+        if ( !this._password.isEmpty() ) {
             return this.performPasswordCheck(this._password);
         }
 
@@ -76,6 +80,7 @@ public class Validator {
     protected boolean performPasswordsCheck() {
         for (int index = 0; index <= this._passwords.length - 1; index++) {
             if ( !this.performPasswordCheck(this._passwords[index]) ) {
+                this._errorIndexPosition = index;
                 return false;
             }
         }
@@ -84,11 +89,14 @@ public class Validator {
     }
 
     protected boolean isLongEnough(String password) {
-        return password.length() >= Validator.PASSWORD_MAXIMUM_LENGTH;
+        return password.length() >= Validator.PASSWORD_MINIMUM_LENGTH;
     }
 
     protected boolean containsNumbers(String password) {
-        return password.matches(this._findNumbersRegex);
+        Pattern digits = Pattern.compile("[0-9]");
+        Matcher numbers = digits.matcher(password);
+
+        return numbers.find();
     }
 
     protected boolean hasCaseMix(String password) {
